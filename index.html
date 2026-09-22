@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Termo de Confidencialidade e Sigilo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f5f5f5;color:#1a1a1a}
+.layout{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.sidebar{background:#c8c0b8;border-right:1px solid #b0a89e;padding:16px;overflow-y:auto;position:sticky;top:0;height:100vh}
+.sidebar-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2a2420;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #b0a89e}
+.section-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#3a3028;margin:14px 0 6px}
+.field{margin-bottom:8px}
+.field label{display:block;font-size:12px;color:#2a2420;margin-bottom:3px}
+.field input,.field select{width:100%;font-size:13px;padding:6px 8px;border:1px solid #b0a89e;border-radius:4px;background:#f5f0eb;color:#1a1a1a;outline:none;font-family:Arial,sans-serif}
+.field input:focus,.field select:focus{border-color:#6b5a4e;box-shadow:0 0 0 2px rgba(107,90,78,0.15)}
+.field input::placeholder{color:#bbb;font-size:12px}
+.date-row{display:grid;grid-template-columns:1fr 36px 1fr 48px;gap:4px}
+.print-btn{width:100%;margin-top:16px;padding:9px;font-size:12px;font-weight:700;background:#f5f0eb;border:1px solid #b0a89e;border-radius:4px;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:Arial,sans-serif}
+.print-btn:hover{background:#e0d8d0}
+.doc{padding:48px 60px;background:#fff;max-width:900px;margin:0 auto;width:100%}
+.doc-title{text-align:center;font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#1a1a1a;margin-bottom:6px}
+.doc-rule{width:48px;height:2px;background:#999;margin:0 auto 28px}
+.doc p{font-size:13.5px;line-height:1.9;text-align:justify;color:#1a1a1a;margin-bottom:14px}
+.clause{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#555;margin:22px 0 6px}
+.section-break{border:none;border-top:1px solid #ddd;margin:22px 0}
+.fv{color:#1a6e3a;font-style:italic;border-bottom:1px dotted #1a6e3a}
+.fv.blank{color:#aaa;font-style:italic;border-bottom:1px dotted #ccc}
+.sig-area{margin-top:36px;padding-top:28px;border-top:1px solid #ccc}
+.sig-date{text-align:center;font-size:13px;color:#555;margin-bottom:64px}
+.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 60px;margin-bottom:48px}
+.sig-block{text-align:center}
+.sig-line{border-top:1px solid #1a1a1a;margin-bottom:8px}
+.sig-name{font-size:12px;font-style:italic;color:#1a6e3a;min-height:18px}
+.sig-role{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#555;margin-top:3px}
+.wit-block{background:#f8f8f8;border:1px solid #ddd;border-left:3px solid #aaa;border-radius:4px;padding:12px 14px;margin-bottom:10px}
+.wit-row{display:flex;align-items:baseline;gap:6px;font-size:13px;padding:4px 0;border-bottom:1px dotted #ddd}
+.wit-row:last-child{border-bottom:none}
+.wit-key{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#666;min-width:100px}
+.wit-section-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#555;text-align:center;margin-bottom:12px}
+
+@media print {
+  body{background:#fff}
+  .sidebar{display:none !important}
+  .layout{display:block}
+  .doc{padding:30px 40px;max-width:100%;margin:0}
+  .wit-block{break-inside:avoid}
+  .sig-grid{break-inside:avoid}
+}
+
+@media (max-width:700px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto}
+  .doc{padding:28px 20px}
+  .sig-grid{grid-template-columns:1fr;gap:40px}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- PAINEL LATERAL -->
+<div class="sidebar">
+  <div class="sidebar-title">✏ Preencha os dados</div>
+
+  <div class="section-label">Contratante</div>
+  <div class="field">
+    <label>Tipo de pessoa</label>
+    <select id="ct_tipo" onchange="toggleCtTipo()">
+      <option value="fisica">Pessoa Física</option>
+      <option value="juridica">Pessoa Jurídica</option>
+    </select>
+  </div>
+  <div class="field"><label id="ct_nome_label">Nome completo</label><input id="ct_nome" placeholder="Nome do(a) contratante" oninput="atualizar()"></div>
+  <div class="field" id="ct_cpf_field"><label>CPF</label><input id="ct_cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCpf(this);atualizar()"></div>
+  <div class="field" id="ct_cnpj_field" style="display:none"><label>CNPJ</label><input id="ct_cnpj_pf" placeholder="00.000.000/0000-00" maxlength="18" oninput="maskCnpj(this);atualizar()"></div>
+  <div class="field" id="ct_rep_field" style="display:none"><label>Representante legal</label><input id="ct_rep" placeholder="Nome do representante" oninput="atualizar()"></div>
+  <div class="field" id="ct_rep_cpf_field" style="display:none"><label>CPF do representante</label><input id="ct_rep_cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCpf(this);atualizar()"></div>
+  <div class="field" style="display:none"><select id="ct_qual"><option value="proprietário(a) da obra">Proprietário(a) da obra</option></select></div>
+
+  <div class="section-label">Contratado(a)</div>
+  <div class="field">
+    <label>Tipo de pessoa</label>
+    <select id="cd_tipo" onchange="toggleCdTipo()">
+      <option value="juridica">Pessoa Jurídica</option>
+      <option value="fisica">Pessoa Física</option>
+    </select>
+  </div>
+  <div class="field"><label id="cd_nome_label">Nome / Razão social</label><input id="cd_nome" placeholder="Nome ou razão social" oninput="atualizar()"></div>
+  <div class="field" id="cd_cnpj_field"><label>CNPJ</label><input id="cd_cnpj" placeholder="00.000.000/0000-00" maxlength="18" oninput="maskCnpj(this);atualizar()"></div>
+  <div class="field" id="cd_rep_field"><label>Representante legal</label><input id="cd_rep" placeholder="Nome do representante" oninput="atualizar()"></div>
+  <div class="field" id="cd_rep_cpf_field"><label>CPF do representante</label><input id="cd_rep_cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCpf(this);atualizar()"></div>
+  <div class="field" id="cd_cpf_field" style="display:none"><label>CPF</label><input id="cd_cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCpf(this);atualizar()"></div>
+
+  <div class="section-label">Data de assinatura</div>
+  <div class="field">
+    <div class="date-row">
+      <input id="dt_cidade" placeholder="Cidade" oninput="atualizar()" style="font-size:12px;padding:6px">
+      <input id="dt_dia" placeholder="Dia" maxlength="2" oninput="atualizar()" style="font-size:12px;padding:6px 4px;text-align:center">
+      <input id="dt_mes" placeholder="Mês" oninput="atualizar()" style="font-size:12px;padding:6px">
+      <input id="dt_ano" placeholder="Ano" maxlength="4" oninput="atualizar()" style="font-size:12px;padding:6px 4px;text-align:center">
+    </div>
+  </div>
+
+  <div class="section-label">Testemunha 1</div>
+  <div class="field"><label>Nome legível</label><input id="t1_nome" placeholder="Nome" oninput="atualizar()"></div>
+  <div class="field"><label>CPF</label><input id="t1_cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCpf(this);atualizar()"></div>
+
+  <div class="section-label">Testemunha 2</div>
+  <div class="field"><label>Nome legível</label><input id="t2_nome" placeholder="Nome" oninput="atualizar()"></div>
+  <div class="field"><label>CPF</label><input id="t2_cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCpf(this);atualizar()"></div>
+
+  <button class="print-btn" onclick="imprimirDoc()">🖨 Imprimir / Salvar PDF</button>
+</div>
+
+<!-- DOCUMENTO -->
+<div class="doc">
+  <div class="doc-title">Termo de Confidencialidade e Sigilo</div>
+  <div class="doc-rule"></div>
+
+  <p>
+    Pelo presente, que entre si fazem <span class="fv blank" id="v_ct_nome">________________________</span>,
+    <span id="v_ct_qualif_bloco">inscrito(a) no CPF sob nº&nbsp;<span class="fv blank" id="v_ct_cpf">____________________</span>,
+    (<span class="fv" id="v_ct_qual">proprietário(a) da obra</span>),</span>
+    doravante denominado(a) <strong>CONTRATANTE</strong>, e
+    <span class="fv blank" id="v_cd_nome">________________________</span>,
+    <span id="v_cd_qualif_bloco">inscrito(a) no CNPJ sob nº&nbsp;<span class="fv blank" id="v_cd_cnpj">____________________</span>,</span>
+    doravante denominado(a) <strong>CONTRATADO</strong>, fica justo e acertado o presente termo,
+    regido pelas seguintes cláusulas:
+  </p>
+
+  <p style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#555">O contratado assegura e garante que:</p>
+
+  <div class="clause">Cláusula 1ª</div>
+  <p>Manterá em absoluto sigilo e tratará como extremamente confidencial, todas as informações disponibilizadas em razão do seu contrato, sendo orais e/ou escritas, relevantes ou relevadas, transmitidas e/ou divulgadas pelo ou no âmbito da CONTRATANTE ao CONTRATADO, eis que consideradas confidenciais, restritas e de propriedade da CONTRATANTE;</p>
+
+  <div class="clause">Cláusula 2ª</div>
+  <p>Reconhecerá que todas as informações confidenciais descritas na cláusula 1ª compreendem, mas não se limitam, àquelas patenteadas ou não, de natureza técnica, operacional, comercial, jurídica, <em>know-how</em>, invenções, dados e informações do cliente, técnicas de comercialização, custos, formação de preços, documentos, contratos, papéis, estudos, pareceres, pesquisas e outras espécies de dados confidenciais relativos ao CONTRATANTE;</p>
+
+  <div class="clause">Cláusula 3ª</div>
+  <p>Não discutirá, divulgará, revelará ou disporá das informações perante terceiros, adotando sempre a máxima cautela e adequada precaução para impedir sua divulgação;</p>
+
+  <div class="clause">Cláusula 4ª</div>
+  <p>Não explorará ou utilizará as informações confidenciais descritas nas cláusulas 1ª e 2ª, para nenhuma outra finalidade que não esteja exclusivamente relacionada com a prestação de serviço;</p>
+
+  <div class="clause">Cláusula 5ª</div>
+  <p>Guardará e manterá sob sua responsabilidade e confidencialidade todas as cópias, reproduções, sumários, análises ou comunicados referentes às informações ou nelas baseadas, devendo devolvê-las à CONTRATANTE quando solicitado ou quando do Distrato;</p>
+
+  <div class="clause">Cláusula 6ª</div>
+  <p>Não publicará em nenhuma rede social, tais como, Facebook, Instagram, Threads, WhatsApp, Telegram, dentre outras similares, imagens (fotos ou vídeos), áudios ou informações da CONTRATANTE e, muito menos, o seu nome ou sobrenome ou qualquer indício que remeta ao seu nome e/ou de sua família;</p>
+
+  <hr class="section-break">
+  <p style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#555">Das disposições gerais</p>
+
+  <div class="clause">Cláusula 7ª</div>
+  <p>Somente será permitida a divulgação de informações confidenciais para qualquer terceiro, com exceção das de conhecimento público, mediante prévia autorização por escrito da CONTRATANTE ou ainda, por força de lei ou em caso de determinação judicial, hipótese em que o CONTRATADO deverá obrigatoriamente, informar, previamente e por escrito à CONTRATANTE;</p>
+
+  <div class="clause">Cláusula 8ª</div>
+  <p>Na hipótese de violação de qualquer cláusula deste Termo, o CONTRATADO estará sujeito ao pagamento/indenização/recomposição de todas as perdas e danos sofridos, inclusive as de ordem moral e/ou concorrencial, bem como as de responsabilidade civil e criminal respectivas, lucros que a CONTRATANTE deixar de auferir e ainda a todas as sanções e penalidades nos termos da legislação brasileira;</p>
+
+  <div class="clause">Cláusula 9ª</div>
+  <p>As obrigações de confidencialidade decorrentes do presente Termo vigorarão desde sua assinatura até o período de 05 (cinco) anos após a extinção do contrato firmado entre as partes;</p>
+
+  <div class="clause">Cláusula 10ª</div>
+  <p>O CONTRATADO deverá cumprir todas as obrigações estipuladas no presente Termo, estando ciente que o descumprimento de qualquer cláusula levará às penalidades elencadas na cláusula 8ª.</p>
+
+  <p>Fica eleito o Foro da Comarca de Belo Horizonte/MG, como competente para dirimir eventuais questões relacionadas aos termos do presente, renunciando as partes a qualquer outro, por mais privilegiado que seja.</p>
+
+  <p>E por estarem as partes de acordo, assinam o presente Termo, em 02 (duas) vias de igual teor e forma, na presença das testemunhas abaixo.</p>
+
+  <!-- ASSINATURAS -->
+  <div class="sig-area">
+    <div class="sig-date">
+      <span class="fv blank" id="v_dt_cidade">___________</span>,
+      <span class="fv blank" id="v_dt_dia">____</span> de
+      <span class="fv blank" id="v_dt_mes">___________</span> de
+      20<span class="fv blank" id="v_dt_ano">____</span>.
+    </div>
+
+    <div class="sig-grid">
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-name" id="v_sig_cd"></div>
+        <div class="sig-role">Contratado(a)</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-name" id="v_sig_ct"></div>
+        <div class="sig-role">Contratante</div>
+      </div>
+    </div>
+
+    <div class="wit-section-title">Testemunhas</div>
+
+    <div class="wit-block">
+      <div class="wit-row"><span class="wit-key">Assinatura:</span><span style="flex:1;color:#aaa;font-style:italic">_________________________________</span></div>
+      <div class="wit-row"><span class="wit-key">Nome legível:</span><span class="fv blank" id="v_t1_nome">_________________________________</span></div>
+      <div class="wit-row"><span class="wit-key">CPF nº:</span><span class="fv blank" id="v_t1_cpf">_______________</span></div>
+    </div>
+
+    <div class="wit-block">
+      <div class="wit-row"><span class="wit-key">Assinatura:</span><span style="flex:1;color:#aaa;font-style:italic">_________________________________</span></div>
+      <div class="wit-row"><span class="wit-key">Nome legível:</span><span class="fv blank" id="v_t2_nome">_________________________________</span></div>
+      <div class="wit-row"><span class="wit-key">CPF nº:</span><span class="fv blank" id="v_t2_cpf">_______________</span></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+function g(id){return document.getElementById(id)}
+function set(id,val,blank){
+  const el=g(id);if(!el)return;
+  if(val&&val.trim()){el.textContent=val;el.classList.remove('blank')}
+  else{el.textContent=blank;el.classList.add('blank')}
+}
+function atualizar(){
+  set('v_ct_nome',g('ct_nome').value,'________________________');
+  const ctTipo = g('ct_tipo') ? g('ct_tipo').value : 'fisica';
+  if(ctTipo === 'fisica'){
+    const bloco = g('v_ct_qualif_bloco');
+    const cpfVal = g('ct_cpf').value || '____________________';
+    if(bloco) bloco.innerHTML = 'inscrito(a) no CPF sob nº&nbsp;<span class="fv'+(g('ct_cpf').value?'':' blank')+'" id="v_ct_cpf">'+cpfVal+'</span>, (<span class="fv" id="v_ct_qual">proprietário(a) da obra</span>),';
+  } else {
+    const bloco = g('v_ct_qualif_bloco');
+    const cnpjEl = g('ct_cnpj_pf');
+    const cnpjVal = cnpjEl ? cnpjEl.value : '';
+    const repCt = g('ct_rep') ? g('ct_rep').value : '';
+    const repCpfCt = g('ct_rep_cpf') ? g('ct_rep_cpf').value : '';
+    const repBlocoCt = repCt ? ', neste ato representada por <span class="fv">'+repCt+'</span>'+(repCpfCt?', inscrito(a) no CPF sob nº <span class="fv">'+repCpfCt+'</span>':'')+'' : '';
+    if(bloco) bloco.innerHTML = 'pessoa jurídica de direito privado, inscrita no CNPJ sob nº&nbsp;<span class="fv'+(cnpjVal?'':' blank')+'" id="v_ct_cnpj_doc">'+(cnpjVal||'____________________')+'</span>'+repBlocoCt+',';
+  }
+  set('v_cd_nome',g('cd_nome').value,'________________________');
+  const cdTipo = g('cd_tipo') ? g('cd_tipo').value : 'juridica';
+  if(cdTipo === 'juridica'){
+    const blococd = g('v_cd_qualif_bloco');
+    const cnpjVal = g('cd_cnpj') ? g('cd_cnpj').value : '';
+    const repCd = g('cd_rep') ? g('cd_rep').value : '';
+    const repCpfCd = g('cd_rep_cpf') ? g('cd_rep_cpf').value : '';
+    const repBlocoCd = repCd ? ', neste ato representada por <span class="fv">'+repCd+'</span>'+(repCpfCd?', inscrito(a) no CPF sob nº <span class="fv">'+repCpfCd+'</span>':'')+'' : '';
+    if(blococd) blococd.innerHTML = 'inscrito(a) no CNPJ sob nº&nbsp;<span class="fv'+(cnpjVal?'':' blank')+'">'+(cnpjVal||'____________________')+'</span>'+repBlocoCd+',';
+  } else {
+    const blococd = g('v_cd_qualif_bloco');
+    const cpfVal = g('cd_cpf') ? g('cd_cpf').value : '';
+    if(blococd) blococd.innerHTML = 'inscrito(a) no CPF sob nº&nbsp;<span class="fv'+(cpfVal?'':' blank')+'">'+(cpfVal||'____________________')+'</span>,';
+  }
+  set('v_dt_cidade',g('dt_cidade').value,'___________');
+  set('v_dt_dia',   g('dt_dia').value,   '____');
+  set('v_dt_mes',   g('dt_mes').value,   '___________');
+  set('v_dt_ano',   g('dt_ano').value,   '____');
+  set('v_sig_ct',g('ct_nome').value,'');
+  set('v_sig_cd',g('cd_nome').value,'');
+  set('v_t1_nome',g('t1_nome').value,'_________________________________');
+  set('v_t1_cpf', g('t1_cpf').value, '_______________');
+  set('v_t2_nome',g('t2_nome').value,'_________________________________');
+  set('v_t2_cpf', g('t2_cpf').value, '_______________');
+}
+function maskCpf(el){
+  let v=el.value.replace(/\D/g,'').substring(0,11);
+  if(v.length>9)v=v.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2}).*/,'$1.$2.$3-$4');
+  else if(v.length>6)v=v.replace(/^(\d{3})(\d{3})(\d*).*/,'$1.$2.$3');
+  else if(v.length>3)v=v.replace(/^(\d{3})(\d*).*/,'$1.$2');
+  el.value=v;
+}
+function maskCnpj(el){
+  let v=el.value.replace(/\D/g,'').substring(0,14);
+  if(v.length>12)v=v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/,'$1.$2.$3/$4-$5');
+  else if(v.length>8)v=v.replace(/^(\d{2})(\d{3})(\d{3})(\d*).*/,'$1.$2.$3/$4');
+  else if(v.length>5)v=v.replace(/^(\d{2})(\d{3})(\d*).*/,'$1.$2.$3');
+  else if(v.length>2)v=v.replace(/^(\d{2})(\d*).*/,'$1.$2');
+  el.value=v;
+}
+function maskCep(el){
+  let v=el.value.replace(/\D/g,'').substring(0,8);
+  if(v.length>5)v=v.replace(/^(\d{5})(\d*)/,'$1-$2');
+  el.value=v;
+}
+async function buscaCep(prefix){
+  const cepEl=g(prefix+'_cep');
+  const raw=cepEl.value.replace(/\D/g,'');
+  if(raw.length!==8)return;
+  try{
+    const r=await fetch('https://viacep.com.br/ws/'+raw+'/json/');
+    const d=await r.json();
+    if(d.erro)return;
+    const end=g(prefix+'_end');const bairro=g(prefix+'_bairro');const cidade=g(prefix+'_cidade');
+    if(end&&!end.value)end.value=d.logradouro||'';
+    if(bairro)bairro.value=d.bairro||'';
+    if(cidade)cidade.value=d.localidade&&d.uf?d.localidade+'/'+d.uf:'';
+    atualizar();
+  }catch(e){}
+}
+atualizar();
+function toggleCtTipo(){
+  const tipo = g('ct_tipo').value;
+  const isPJ = tipo === 'juridica';
+  g('ct_cpf_field').style.display  = isPJ ? 'none' : 'block';
+  g('ct_cnpj_field').style.display = isPJ ? 'block' : 'none';
+  g('ct_rep_field').style.display  = isPJ ? 'block' : 'none';
+  g('ct_rep_cpf_field').style.display = isPJ ? 'block' : 'none';
+  g('ct_nome_label').textContent   = isPJ ? 'Razão social' : 'Nome completo';
+  g('ct_nome').placeholder         = isPJ ? 'Nome / Razão social' : 'Nome do(a) contratante';
+  atualizar();
+}
+function toggleCdTipo(){
+  const tipo = g('cd_tipo').value;
+  const isPJ = tipo === 'juridica';
+  g('cd_cnpj_field').style.display    = isPJ ? 'block' : 'none';
+  g('cd_rep_field').style.display     = isPJ ? 'block' : 'none';
+  g('cd_rep_cpf_field').style.display = isPJ ? 'block' : 'none';
+  g('cd_cpf_field').style.display     = isPJ ? 'none' : 'block';
+  g('cd_nome_label').textContent      = isPJ ? 'Nome / Razão social' : 'Nome completo';
+  g('cd_nome').placeholder            = isPJ ? 'Nome ou razão social' : 'Nome do(a) contratado(a)';
+  atualizar();
+}
+
+/* ===== Impressão / Salvar em PDF (sem depender de recurso da plataforma) =====
+   1) Abre o documento preenchido em nova aba e imprime lá (melhor qualidade).
+   2) Se a nova aba for bloqueada, imprime a própria página (o @media print
+      oculta a barra lateral).
+   3) Último recurso: gera o PDF via biblioteca e baixa. */
+function _nomeArquivoPdf(){
+  var t=(document.title||'documento').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  return (t||'documento')+'.pdf';
+}
+function _cssPagina(){
+  return Array.prototype.map.call(document.querySelectorAll('style'),function(s){return s.textContent;}).join('\n');
+}
+function _htmlImpressao(){
+  var doc=document.querySelector('.doc');
+  var extra='body{background:#fff;margin:0}'
+    +'.doc{max-width:none !important;margin:0 !important;box-shadow:none !important}'
+    +'.barra-imp{position:sticky;top:0;z-index:9;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;background:#f2ede8;border-bottom:1px solid #ccc;padding:10px 12px;font-family:Arial,sans-serif;font-size:13px;color:#444}'
+    +'.barra-imp button{padding:8px 16px;font-size:13px;font-weight:700;border:1px solid #8a8a8a;border-radius:5px;background:#fff;cursor:pointer}'
+    +'.barra-imp button:hover{background:#eee}'
+    +'@media print{.barra-imp{display:none !important}}';
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">'
+    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<title>'+document.title+'</title><style>'+_cssPagina()+'\n'+extra+'</style></head>'
+    +'<body><div class="barra-imp"><button onclick="window.print()">&#128424; Imprimir / Salvar em PDF</button>'
+    +'<span>ou pressione Ctrl+P (Cmd+P no Mac) e escolha \u201CSalvar como PDF\u201D.</span></div>'
+    +doc.outerHTML
+    +'<scr'+'ipt>window.addEventListener("load",function(){setTimeout(function(){try{window.focus();window.print();}catch(e){}},450);});<\/scr'+'ipt>'
+    +'</body></html>';
+}
+function _carregarScript(src){
+  return new Promise(function(res,rej){
+    var s=document.createElement('script');s.src=src;s.onload=res;s.onerror=function(){rej(new Error('load'));};
+    document.head.appendChild(s);
+  });
+}
+async function _baixarPdfAnchor(){
+  try{
+    if(typeof html2pdf==='undefined'){
+      await _carregarScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js');
+    }
+    var alvo=document.querySelector('.doc').cloneNode(true);
+    var wrap=document.createElement('div');
+    wrap.style.cssText='position:fixed;left:-99999px;top:0;background:#fff;width:794px;padding:36px 44px;box-sizing:border-box';
+    wrap.appendChild(alvo);document.body.appendChild(wrap);
+    var opt={margin:[0,0,0,0],filename:_nomeArquivoPdf(),image:{type:'jpeg',quality:0.98},
+      html2canvas:{scale:2,backgroundColor:'#ffffff',useCORS:true},
+      jsPDF:{unit:'pt',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy']}};
+    var blob=await html2pdf().set(opt).from(wrap).outputPdf('blob');
+    if(wrap.parentNode)document.body.removeChild(wrap);
+    var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=_nomeArquivoPdf();
+    document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},4000);
+  }catch(e){
+    alert('Para salvar em PDF: use Ctrl+P (Cmd+P no Mac) e escolha \u201CSalvar como PDF\u201D como impressora.');
+  }
+}
+function imprimirDoc(){
+  var w=null;
+  try{ w=window.open('','_blank'); }catch(e){ w=null; }
+  if(w&&!w.closed){
+    try{ w.document.open();w.document.write(_htmlImpressao());w.document.close();w.focus(); return; }catch(e){ try{w.close();}catch(_){} }
+  }
+  try{ window.print(); }catch(e){ _baixarPdfAnchor(); }
+}
+</script>
+</body>
+</html>
